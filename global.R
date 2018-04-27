@@ -10,28 +10,28 @@ library(leaflet.extras)
 library(rMaps)
 
 
-thechisample=fread("~/Documents/Bootcamp/Lectures/R/SHINY/thechisample.csv", stringsAsFactors=F)
-thechisample=as.data.frame(thechisample)
+thechi=fread("~/Documents/Bootcamp/Lectures/R/SHINY/thechi.csv", stringsAsFactors=F)
+thechi=as.data.frame(thechisample)
 
 #count by crime type 
-count_by_type = thechisample %>%
+count_by_type = thechi %>%
   group_by(primary_type) %>%
   summarise(Count=n())
 
 #count by charge type
-count_by_charge = thechisample %>%
+count_by_charge = thechi %>%
   group_by(charge) %>%
   summarise(Count=n())
 
-count_by_month = thechisample %>% 
+count_by_month = thechi %>% 
   group_by(month) %>%
   summarise(Count=n())
 
-count_by_hour = thechisample %>%
+count_by_hour = thechi %>%
   group_by(hour) %>%
   summarise(Count=n())
 
-count_by_premises= thechisample %>%
+count_by_premises= thechi %>%
   group_by(desc_classifier) %>%
   summarise(Count=n())
 
