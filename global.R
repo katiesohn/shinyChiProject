@@ -8,10 +8,14 @@ library(plotly)
 library(DT)
 library(leaflet.extras)
 library(rMaps)
+library(dygraphs)
+#library(xts)
+#library(highcharter)
+
 
 
 thechi=fread("~/Documents/Bootcamp/Lectures/R/SHINY/thechi.csv", stringsAsFactors=F)
-thechi=as.data.frame(thechisample)
+thechi=as.data.frame(thechi)
 
 #count by crime type 
 count_by_type = thechi %>%
@@ -39,6 +43,10 @@ choice1=unique(count_by_charge$charge)
 #choice2=c('ALL',unique(count_by_type$year))
 choice3=unique(count_by_premises$desc_classifier)
 #choice4=unique(count.boro$Boro)
+
+
+#Arrests_by_Date <- na.omit(thechi[thechi$arrest == 'TRUE',]) %>% group_by(date_alone) %>% summarise(Total = n())
+#arrests_tseries <- xts(Arrests_by_Date$Total, order.by=as.POSIXct(Arrests_by_Date$date_alone))
 
 groupColors=colorFactor(c('#009DDC','#62BB47'),
                         domain = c('MISDEMEANOR','FELONY'))
