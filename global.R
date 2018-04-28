@@ -9,33 +9,34 @@ library(DT)
 library(leaflet.extras)
 library(rMaps)
 library(dygraphs)
-#library(xts)
-#library(highcharter)
+library(xts)
+library(highcharter)
+library(anytime)
 
 
 
-thechi=fread("~/Documents/Bootcamp/Lectures/R/SHINY/thechi.csv", stringsAsFactors=F)
-thechi=as.data.frame(thechi)
+thechisamp=fread("~/Documents/Bootcamp/Lectures/R/SHINY/thechisampple2.csv", stringsAsFactors=F)
+thechisamp=as.data.frame(thechisamp)
 
 #count by crime type 
-count_by_type = thechi %>%
+count_by_type = thechisamp %>%
   group_by(primary_type) %>%
   summarise(Count=n())
 
 #count by charge type
-count_by_charge = thechi %>%
+count_by_charge = thechisamp %>%
   group_by(charge) %>%
   summarise(Count=n())
 
-count_by_month = thechi %>% 
+count_by_month = thechisamp %>% 
   group_by(month) %>%
   summarise(Count=n())
 
-count_by_hour = thechi %>%
+count_by_hour = thechisamp %>%
   group_by(hour) %>%
   summarise(Count=n())
 
-count_by_premises= thechi %>%
+count_by_premises= thechisamp %>%
   group_by(desc_classifier) %>%
   summarise(Count=n())
 
@@ -45,7 +46,7 @@ choice3=unique(count_by_premises$desc_classifier)
 #choice4=unique(count.boro$Boro)
 
 
-#Arrests_by_Date <- na.omit(thechi[thechi$arrest == 'TRUE',]) %>% group_by(date_alone) %>% summarise(Total = n())
+#Arrests_by_Date <- na.omit(thechisamp[thechisamp$arrest == 'TRUE',]) %>% group_by(date_alone) %>% summarise(Total = n())
 #arrests_tseries <- xts(Arrests_by_Date$Total, order.by=as.POSIXct(Arrests_by_Date$date_alone))
 
 groupColors=colorFactor(c('#009DDC','#62BB47'),

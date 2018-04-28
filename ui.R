@@ -9,15 +9,26 @@ shinyUI(dashboardPage(
     sidebarMenu(
       menuItem("Heat Map", tabName = "heatmap", icon = icon("map")),
       menuItem("Map",tabName = "map",icon = icon("globe")),
-      #menuItem("Time Series", tabName = "timeseries", icon = icon("clock", lib="font-awesome")),
+      menuItem("Time Series", tabName = "timeseries", icon = icon("calendar")),
+               # selectizeInput("selected",
+               #                "Select Item to Display", choice=c("Arrests By Day", "Crimes by Day")
+               #),
       menuItem("Data", tabName = "data", icon = icon("database")))
   ), 
   dashboardBody(
     tabItems(
       
-      #tabItem(tabName = 'timeseries', 'nothing'
-              #fluidRow(box(highchartOutput('hcontainer', height = "500px")))
-              #),
+      #### Test ####
+      # tabItem(tabName = 'timeseries',
+      #         fluidRow((highchartOutput('finalTest', height = "500px")))
+      #         ),
+      #### End of test ####
+      
+      
+      tabItem(tabName = 'timeseries',
+              fluidRow((highchartOutput('hcontainer'))),
+              fluidRow((highchartOutput('hcontainer2')))
+      ),
               
       
       tabItem(tabName = "data",
@@ -42,8 +53,8 @@ shinyUI(dashboardPage(
                                        checkboxGroupInput(inputId="premises", label=h4("Select Location"),
                                                           choices=choice3, selected='RESIDENCE'),
                                 
-                                       sliderInput(inputId = "year2", label = h4("Select Year"), min=2012, max=2016, step =1,
-                                       sep='', value = thechi$year))),
+                                       sliderInput(inputId = "year2", label = h4("Select Year"), min=2012, max=2017, step =1,
+                                       sep='', value = thechisamp$year))),
       
       tabItem(tabName='map',
               #h2("Mapping"),

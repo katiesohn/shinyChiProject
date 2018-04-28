@@ -13,7 +13,7 @@
 shinyServer(function(input, output, session) {
 
     reactheatmap=reactive({
-    thechi %>%
+    thechisamp %>%
       filter(charge %in% input$type &
                desc_classifier %in% input$premises &
                year >= input$year2[1] &
@@ -35,18 +35,18 @@ shinyServer(function(input, output, session) {
       removeWebGLHeatmap(layerId='a') %>%
       addWebGLHeatmap(layerId='a',data=reactheatmap(),
                       lng=~longitude, lat=~latitude,
-                      size=300)
+                      size=120)
   })
   
   reactmap=reactive({
-    thechi %>% 
+    thechisamp %>% 
       filter(charge %in% input$type1 &
                desc_classifier %in% input$premises1
                & Year >= input$year2[1] &
                Year <= input$year2[2])
   })
  
-  ################## DRAWS INITIAL MAP #######################
+  ################## DRAWS INITIAL REGULAR MAP #######################
    output$map=renderLeaflet({
     leaflet() %>% 
       addProviderTiles(providers$Esri.WorldStreetMap) %>% 
@@ -69,49 +69,83 @@ shinyServer(function(input, output, session) {
   
   ################## DATA TABLE #######################
   output$table <- DT::renderDataTable({
-    datatable(thechi, rownames=FALSE) %>% 
+    datatable(thechisamp, rownames=FALSE) %>% 
       formatStyle(input$selected,  #this is the only place that requires input from the UI. so
                   #here we are highlighting only the column that the user selected 
                   background="skyblue", fontWeight='bold')
     # Highlight selected column using formatStyle
   })
   
+  
+  ######## Test #######
+  # output$finalTest =  renderHighchart({
+  #   highchart() %>% 
+  #     hc_title(text = "Scatter chart with size and color") %>% 
+  #     hc_add_series_scatter(mtcars$wt, mtcars$mpg,
+  #                           mtcars$drat, mtcars$hp)
+  # })
+  ######## End of Test #######
+  
+  
+  
   ################## CREATING TIMESERIES #######################
-  # Arrests_by_Date <- na.omit(thechi[thechi$arrest == 'TRUE',]) %>% group_by(date_alone) %>% summarise(Total = n())
-  # arrests_tseries <- xts(Arrests_by_Date$Total, order.by=as.POSIXct(Arrests_by_Date$date_alone))
-  # 
-  # output$hcontainer <-renderHighchart({
+  #arrest by date time series 
+  #thechisamp$date_alone=as.POSIXct(thechisamp$date_alone, format = "%Y-%m-%d")
+  #Arrests_by_Date <- na.omit(thechisamp[thechisamp$arrest == 'TRUE',]) %>% group_by(date_alone) %>% summarise(Total = n())
+  Arrests_by_Date <- na.omit(thechisamp[thechisamp$arrest == 'TRUE',]) %>% group_by(date) %>% summarise(Total = n())
+  arrests_tseries <- xts(Arrests_by_Date$Total, order.by=as.POSIXct(Arrests_by_Date$date))
   
-    #y = arrests_tseries
-    
-    # highchart() %>% 
-    #   hc_title(text = "Scatter chart with size and color") %>% 
-    #   hc_add_series_scatter(mtcars$wt, mtcars$mpg,
-    #                         mtcars$drat, mtcars$hp)
-    # 
-    
-    # highchart() %>%
-    #   hc_exporting(enabled = TRUE) %>%
-    #   hc_add_series(data=arrests_tseries) %>%
-    #   
-      
-                         #yAxis = 0, name = "Sample Data", smoothed = TRUE, forced = TRUE,
-                         #groupPixelWidth = 24) %>%
-      # hc_rangeSelector(buttons = list(
-      #   list(type = 'all', text = 'All'),
-      #   list(type = 'hour', count = 2, text = '2h'),
-      #   list(type = 'month', count = 1, text = '1h'),
-      #   list(type = 'minute', count = 30, text = '30m'),
-      #   list(type = 'minute', count = 10, text = '10m'),
-      #   list(type = 'minute', count = 5, text = '5m')
-      #)) %>%
-    
-    
-      # hc_add_theme(hc_theme_538(colors = c("red", "blue", "green"),
-      #                           chart = list(backgroundColor = "white")))
-    
+  output$hcontainer <-renderHighchart({
   
+    y = arrests_tseries
+    
+    highchart(type="stock") %>%
+      hc_exporting(enabled = TRUE) %>%
+      hc_xAxis(anydate(arrests_tseries, tz="America/Chicago")) %>%
+      hc_title(text = "Arrest by Day (2012 - 2017)",
+               margin = 20, align = "center") %>%
+      hc_add_series(y, name = "Arrests", id="T1", smoothed = TRUE, forced = TRUE,
+                         groupPixelWidth = 24) %>%
+      hc_rangeSelector(buttons = list(
+        list(type = 'all', text = 'All'),
+        list(type = 'month', count = 12, text = '1Y'),
+        list(type = 'month', count = 6, text = '6M'),
+        list(type = 'month', count = 3, text = '3M'),
+        list(type = 'day', count = 30, text = '1M'),
+        list(type = 'day', count = 7, text = '1 Week')
+      )) %>%
+    
+      #https://github.com/jbkunst/highcharter/issues/293 <-- themes
+      hc_add_theme(hc_theme_538(colors = c("red", "white", "blue"),
+                                chart = list(backgroundColor = "white")))
+    
   })
+  
+  by_Date <- na.omit(thechisamp) %>% group_by(date) %>% summarise(Total = n())
+  tseries <- xts(by_Date$Total, order.by=as.POSIXct(by_Date$date))
+  
+  output$hcontainer2 <-renderHighchart({
     
- # })
+    z = tseries
+    
+    highchart(type="stock") %>%
+      hc_exporting(enabled = TRUE) %>%
+      hc_add_series(z, name = "Number of Crimes by Day", smoothed = TRUE, forced = TRUE,
+                    groupPixelWidth = 24) %>%
+      hc_title(text = "Total Crimes by Day (2012-2017)",
+               margin = 20, align = "center") %>%
+      hc_add_theme(hc_theme_538(colors = c("red", "white", "blue"),
+                                  chart = list(backgroundColor = "white"))) %>%
+      hc_rangeSelector(buttons = list(
+        list(type = 'all', text = 'All'),
+        list(type = 'month', count = 12, text = '1Y'),
+        list(type = 'month', count = 6, text = '6M'),
+        list(type = 'month', count = 3, text = '3M'),
+        list(type = 'day', count = 30, text = '1M'),
+        list(type = 'day', count = 7, text = '1 Week')
+      )) #%>%
+      
+  })
+  
+})
 
