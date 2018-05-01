@@ -11,13 +11,92 @@
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
+    
+    observeEvent(
+    eventExpr = input[["crimetype"]],
+    handlerExpr = {
+    
+    reactbargraph =  thechisamp[thechisamp$primary_type == input$crimetype,] %>%
+        group_by(year) %>%
+        summarise(Total = n())
+  
+    output$crimetypesyear = renderPlotly({
+      
+      p <- plot_ly(data=reactbargraph, x = ~year, y = ~Total, type = 'bar',
+                   marker = list(color = 'yellow',
+                                 line = list(color = 'slate',
+                                             width = 1))) %>%
+        layout(title = "Crime Types by Year",
+               xaxis = list(title = "Crime Type"),
+               yaxis = list(title = "Totals"))
+      
+    })
+      
+    })     
 
-    reactheatmap=reactive({
+  ################## DRAW AREA GRAPH FOR LOCATIONS BY HOUR #######################     
+  
+  observeEvent(
+    eventExpr = input[["location_type"]],
+    handlerExpr = {
+
+  reactbargraphlocationsbyhour = thechisamp[thechisamp$desc_classifier == input$location_type,] %>%
+      group_by(hour) %>%
+      summarise(Total = n())
+
+   output$reactbargraphlocationsbyhour = renderPlotly({
+     
+     # validate(
+     #   need(input$location_type != "", "Please select at least one location")
+     # )
+     # if (input$location_type=='ALL'){
+     #   thechisamp
+     # }
+     # else{
+     #   thechisamp %>% filter(desc_classifier %in% input$location_type)
+     # }
+     
+    p = plot_ly(reactbargraphlocationsbyhour, x= ~hour, y = ~Total, type = 'scatter', mode = 'lines',
+                fill = 'tonexty') %>%
+        layout(yaxis=list(title="Total Crimes"))
+
+    })
+    })
+
+  ##### NEED ANOTHER GRAPH HERE THAT RENDERS THE CRIME TYPE BY LOCATION BY HOUR 
+  
+  # reactbargraphlocationsbyhour=reactive({
+  #   validate(
+  #     need(input$location_type != "", "Please select at least one location")
+  #   )
+  #   if (input$location_type=='ALL'){
+  #     thechisamp
+  #   }
+  #   else{
+  #     thechisamp %>% filter(desc_classifier %in% input$location_type)
+  #   }
+  #
+  # })
+  # 
+  # output$reactbargraphlocationsbyhour<-renderPlot({
+  #   ggplot(reactbargraphlocationsbyhour(), aes(x=as.factor(hour),color=desc_classifier, fill=desc_classifier))+
+  #     geom_area(alpha=0.55, stat='bindot')+
+  #     guides(fill=guide_legend(),color=guide_legend())+
+  #     labs(x = "Hours", y = "Location Count",
+  #          title = "Locations by Hour")
+  # 
+  # })
+  
+  
+  ################## HEATMAP REACTIVE DATA #######################   
+  
+  reactheatmap=reactive({
     thechisamp %>%
       filter(charge %in% input$type &
-               desc_classifier %in% input$premises &
-               year >= input$year2[1] &
-               year <= input$year2[2])
+               desc_classifier %in% input$premises)  # &
+               #year %in% input$year2)
+               # year == input$year2[1] &
+               # year == input$year2[2])
 
   })
 
@@ -41,9 +120,9 @@ shinyServer(function(input, output, session) {
   reactmap=reactive({
     thechisamp %>% 
       filter(charge %in% input$type1 &
-               desc_classifier %in% input$premises1
-               & Year >= input$year2[1] &
-               Year <= input$year2[2])
+               desc_classifier %in% input$premises1)
+               #& Year >= input$year2[1] &
+               #Year <= input$year2[2])
   })
  
   ################## DRAWS INITIAL REGULAR MAP #######################
@@ -76,27 +155,13 @@ shinyServer(function(input, output, session) {
     # Highlight selected column using formatStyle
   })
   
-  
-  ######## Test #######
-  # output$finalTest =  renderHighchart({
-  #   highchart() %>% 
-  #     hc_title(text = "Scatter chart with size and color") %>% 
-  #     hc_add_series_scatter(mtcars$wt, mtcars$mpg,
-  #                           mtcars$drat, mtcars$hp)
-  # })
-  ######## End of Test #######
-  
-  
-  
   ################## CREATING TIMESERIES #######################
-  #arrest by date time series 
-  #thechisamp$date_alone=as.POSIXct(thechisamp$date_alone, format = "%Y-%m-%d")
-  #Arrests_by_Date <- na.omit(thechisamp[thechisamp$arrest == 'TRUE',]) %>% group_by(date_alone) %>% summarise(Total = n())
+  
   Arrests_by_Date <- na.omit(thechisamp[thechisamp$arrest == 'TRUE',]) %>% group_by(date) %>% summarise(Total = n())
   arrests_tseries <- xts(Arrests_by_Date$Total, order.by=as.POSIXct(Arrests_by_Date$date))
   
   output$hcontainer <-renderHighchart({
-  
+
     y = arrests_tseries
     
     highchart(type="stock") %>%
@@ -125,7 +190,6 @@ shinyServer(function(input, output, session) {
   tseries <- xts(by_Date$Total, order.by=as.POSIXct(by_Date$date))
   
   output$hcontainer2 <-renderHighchart({
-    
     z = tseries
     
     highchart(type="stock") %>%
@@ -134,8 +198,8 @@ shinyServer(function(input, output, session) {
                     groupPixelWidth = 24) %>%
       hc_title(text = "Total Crimes by Day (2012-2017)",
                margin = 20, align = "center") %>%
-      hc_add_theme(hc_theme_538(colors = c("red", "white", "blue"),
-                                  chart = list(backgroundColor = "white"))) %>%
+      hc_add_theme(hc_theme_darkunica()) %>% #,
+                                  #chart = list(backgroundColor = "white"))) %>%
       hc_rangeSelector(buttons = list(
         list(type = 'all', text = 'All'),
         list(type = 'month', count = 12, text = '1Y'),

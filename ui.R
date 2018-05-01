@@ -1,35 +1,55 @@
 library(shiny)
 library(shinydashboard)
 
-shinyUI(dashboardPage( 
-  skin = 'green',
+shinyUI(dashboardPage(skin="black", 
+    
   dashboardHeader(title = "Welcome to the Chi"), 
   dashboardSidebar(
     sidebarUserPanel("Katie Sohn"),
     sidebarMenu(
-      menuItem("Heat Map", tabName = "heatmap", icon = icon("map")),
-      menuItem("Map",tabName = "map",icon = icon("globe")),
-      menuItem("Time Series", tabName = "timeseries", icon = icon("calendar")),
-               # selectizeInput("selected",
-               #                "Select Item to Display", choice=c("Arrests By Day", "Crimes by Day")
-               #),
+      menuItem("Overview", tabName = "overview", icon = icon("gem"),
+               menuSubItem("Crime Types By Year", tabName="crimetypesyear"),
+               menuSubItem("Crime Locations", tabName="crimelocations")),
+      menuItem("Heat Map", tabName = "heatmap", icon = icon("fire-extinguisher")),
+      menuItem("Map",tabName = "map",icon = icon("map-pin")),
+      menuItem("Time Series", tabName = "timeseries", icon = icon("hourglass"),
+               menuSubItem("Arrests Over Time", tabName= "arrests"),
+               menuSubItem("Crimes Over Time", tabName="crimes")),
       menuItem("Data", tabName = "data", icon = icon("database")))
   ), 
   dashboardBody(
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
+    
     tabItems(
+      tabItem(tabName = 'arrests',
+              fluidRow((highchartOutput('hcontainer')))),
       
-      #### Test ####
-      # tabItem(tabName = 'timeseries',
-      #         fluidRow((highchartOutput('finalTest', height = "500px")))
-      #         ),
-      #### End of test ####
+      tabItem(tabName = 'crimes',
+              fluidRow((highchartOutput('hcontainer2')))),
       
+      tabItem(tabName = 'crimetypesyear',
+              selectInput(inputId='crimetype', label=h3('Crime Type'), choices = choice4,
+                          selected = 'HOMICIDE'),
+              plotlyOutput('crimetypesyear', height = "auto", width ="auto")),
+              # fluidRow((highchartOutput('crimetypesyear')))),
       
-      tabItem(tabName = 'timeseries',
-              fluidRow((highchartOutput('hcontainer'))),
-              fluidRow((highchartOutput('hcontainer2')))
-      ),
+      tabItem(tabName = 'crimelocations',
+              fluidRow(
+                column(3, checkboxGroupInput(inputId='location_type',
+                          label = h4("Select Locations"),choices = choice3)
+                ),
+                
+                column(9,
+                       h3(''),
+                       plotlyOutput(outputId = "reactbargraphlocationsbyhour", 
+                                    height="auto", width ="auto"))
+              )),
               
+              
+              # selectInput(inputId='location_type', label=h3('Locations'), choices = choice3,
+              #             selected = 'STREET'),
+              # plotlyOutput('locations', height = "auto", width ="auto")),
       
       tabItem(tabName = "data",
               # datatable
@@ -37,13 +57,20 @@ shinyUI(dashboardPage(
       #changing width to 12 makes it take up whole page )
       
       tabItem(tabName='heatmap',
-              #h2("Heat Map"),
-              #tags$style(type = "text/css", "html, body {width:100%;height:100%}",
-                         leafletOutput("heatmap",width = '950',height = '650'),
-                         
-                         absolutePanel(id = "controls1", class = "panel panel-default", fixed = TRUE, draggable = TRUE,
+              div(class="outer",
+              tags$head(
+                tags$style(type = "text/css", "#heatmap {height: calc(100vh - 80px) !important;}")
+              
+              )),
+              
+                         leafletOutput("heatmap",width = '100%',height = '100%'),
+                                      
+                                       div(class="outer"), 
+                         absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE, draggable = TRUE,
                                        top = 150, left = "auto", right = 15, bottom = "auto",
                                        width = 200, height = "auto",
+                                       
+                                       
                                        checkboxGroupInput(inputId="type", label=h4("Select Crime Type"),
                                                    choices=choice1, selected='FELONY'),
                                        #kept line below in case i'd rather do a drop down
@@ -51,14 +78,18 @@ shinyUI(dashboardPage(
                                                    #choices = choice1, selected = 'FELONY')
 
                                        checkboxGroupInput(inputId="premises", label=h4("Select Location"),
-                                                          choices=choice3, selected='RESIDENCE'),
+                                                          choices=choice3, selected='RESIDENCE'))),
                                 
-                                       sliderInput(inputId = "year2", label = h4("Select Year"), min=2012, max=2017, step =1,
-                                       sep='', value = thechisamp$year))),
+                                       # sliderInput(inputId = "year2", label = h4("Select Year"), min=2012, max=2017, step =1,
+                                       # sep='', value = thechisamp$year)),
+                                       # style = "opacity: 0.92"),
       
       tabItem(tabName='map',
-              #h2("Mapping"),
-                        leafletOutput("map",width = '900',height = '900'),
+              div(class="outer",
+                  tags$head(
+                    tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}")
+                  )),
+                        leafletOutput("map",width = '100%',height = '100%'),
                         
                         absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE, draggable = TRUE, 
                                       top = 150, left = "auto", right = 15, bottom = "auto",
