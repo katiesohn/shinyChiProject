@@ -12,45 +12,47 @@ library(xts)
 library(highcharter)
 library(shinythemes)
 library(markdown)
-library(tidyverse)
+library(anytime)
+
 
 
 
 
 
 #thechi=fread("~/Documents/Bootcamp/Lectures/R/SHINY/thechi.csv", stringsAsFactors=F)
-thechi = readRDS("thechi.rds")
+#thechi = readRDS("thechi.rds")
+thechitibble = readRDS("thechitibble.rds")
 
 
-thechi$year = factor(thechi$year, levels=2012:2017)
-thechi$month = factor(thechi$month, levels =1:12)
-thechi$hour = factor(thechi$hour, levels=0:23)
+thechitibble$year = factor(thechitibble$year, levels=2012:2017)
+thechitibble$month = factor(thechitibble$month, levels =1:12)
+thechitibble$hour = factor(thechitibble$hour, levels=0:23)
 #thechi$day_of_week= factor(thechi$date, levels=wday(date))
 
 #SAMPLE FOR FIRST 100K ROWS
-thechisamp=thechi[1:100000,]
+#thechisamp=thechi[1:100000,]
 #SAMPLE FROM JUST 2014 - 2016
-thechi1416=thechi[thechi$year==2014 | thechi$year ==2015 | thechi$year == 2016,]
+thechi1416=thechitibble[thechitibble$year==2014 | thechitibble$year ==2015 | thechitibble$year == 2016,]
 
 #count by crime type 
-count_by_type = thechi %>%
+count_by_type = thechitibble %>%
   group_by(primary_type) %>%
   summarise(Count=n())
 
 #count by charge type
-count_by_charge = thechi %>%
+count_by_charge = thechitibble %>%
   group_by(charge) %>%
   summarise(Count=n())
 
-count_by_month = thechi %>% 
+count_by_month = thechitibble %>% 
   group_by(month) %>%
   summarise(Count=n())
 
-count_by_hour = thechi %>%
+count_by_hour = thechitibble %>%
   group_by(hour) %>%
   summarise(Count=n())
 
-count_by_premises= thechi %>%
+count_by_premises= thechitibble %>%
   group_by(desc_classifier) %>%
   summarise(Count=n())
 
